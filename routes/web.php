@@ -21,6 +21,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/campaigns', function () {
+        return view('campaigns.index');
+    })->name('campaigns.index');
+
+    Route::get('/subscribers', function () {
+        return view('subscribers.index');
+    })->name('subscribers.index');
 });
 
 /*

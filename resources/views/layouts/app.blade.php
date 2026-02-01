@@ -19,18 +19,28 @@
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
-            <!-- Page Heading -->
-            @isset($header)
+            <!-- Page Heading (slot from Blade, or title from Livewire) -->
+            @if(isset($header))
                 <header class="bg-white shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
-            @endisset
+            @elseif(isset($title))
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                            {{ $title }}
+                        </h2>
+                    </div>
+                </header>
+            @endif
 
             <!-- Page Content -->
-            <main>
-                {{ $slot }}
+            <main class="py-8">
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {{ $slot }}
+                </div>
             </main>
         </div>
         @livewireScripts
