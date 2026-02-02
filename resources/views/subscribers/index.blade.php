@@ -6,6 +6,6 @@
     </x-slot>
 
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-        <livewire:subsriber.list />
+        <livewire:subscriber.list />
     </div>
 </x-app-layout>

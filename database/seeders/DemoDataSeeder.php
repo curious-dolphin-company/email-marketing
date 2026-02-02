@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Campaign;
+use App\Models\Subscriber;
+
 
 class DemoDataSeeder extends Seeder
 {
@@ -35,6 +37,18 @@ class DemoDataSeeder extends Seeder
                 'subject' => fake()->sentence(6),
                 'body' => fake()->paragraphs(rand(1, 3), true),
                 'status' => 'draft',
+            ]);
+        }
+
+        // 2. Create 20000 subsribers
+        for ($i = 1; $i <= 20000; $i++) {
+            $user = $users->random();
+
+            Subscriber::create([
+                'user_id' => $user->id,
+                'name' => fake()->name(),
+                'email' => fake()->unique()->safeEmail(),
+                'status' => 'active',
             ]);
         }
     }

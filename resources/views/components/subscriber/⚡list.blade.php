@@ -2,7 +2,7 @@
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Campaign;
+use App\Models\Subscriber;
 use Illuminate\Support\Facades\Auth;
 
 new class extends Component
@@ -19,14 +19,13 @@ new class extends Component
         $this->resetPage();
     }
 
-    public function getCampaignsProperty()
+    public function getSubscribersProperty()
     {
-        return Campaign::where('user_id', Auth::id())
+        return Subscriber::where('user_id', Auth::id())
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('subject', 'like', '%' . $this->search . '%')
-                      ->orWhere('body', 'like', '%' . $this->search . '%');
+                      ->orWhere('email', 'like', '%' . $this->search . '%');
                 });
             })
             ->latest()
@@ -40,11 +39,11 @@ new class extends Component
 
     public function delete(int $id): void
     {
-        Campaign::where('id', $id)
+        Subscriber::where('id', $id)
             ->where('user_id', Auth::id())
             ->delete();
 
-        session()->flash('success', 'Campaign deleted successfully.');
+        session()->flash('success', 'Subscriber deleted successfully.');
     }
 
 };
@@ -52,14 +51,14 @@ new class extends Component
 
 <div>
     <div class="flex justify-between items-center mb-4">
-        <p class="text-gray-600">{{ __('Manage your email campaigns.') }}</p>
+        <p class="text-gray-600">{{ __('Manage your subscribers.') }}</p>
 
 <div class="flex flex-col sm:flex-row gap-3">
     <form wire:submit="applySearch" class="flex gap-2 w-full sm:w-auto">
         <input
             type="text"
             wire:model.defer="search"
-            placeholder="Search campaigns..."
+            placeholder="Search subscribers..."
             class="border rounded px-3 py-2 w-full sm:w-64"
         >
 
@@ -82,9 +81,9 @@ new class extends Component
 </div>
 
 
-        <a href="{{ route('campaigns.create') }}"
+        <a href="{{ route('subscribers.create') }}"
            class="px-4 py-2 rounded bg-black text-white">
-            New Campaign
+            New Subscriber
         </a>
     </div>
 
@@ -98,38 +97,36 @@ new class extends Component
         <thead>
         <tr class="border-b text-left">
             <th class="py-2">Name</th>
+            <th>Email</th>
             <th>Status</th>
-            <th>Scheduled At</th>
             <th></th>
         </tr>
         </thead>
 
         <tbody>
-        @forelse ($this->campaigns as $campaign)
+        @forelse ($this->subscribers as $subscriber)
             <tr class="border-b">
-                <td class="py-2">{{ $campaign->name }}</td>
+                <td class="py-2">
+                    <a href="{{ route('subscribers.edit', $subscriber->id) }}" class="text-blue-600">
+                        {{ $subscriber->name }}
+                    </a>
+                </td>
+
+                <td class="py-2">{{ $subscriber->email }}</td>
 
                 <td>
-                    <span class="px-2 py-1 text-sm rounded
+                    <span class="px-2 py-1 text-sm rounded 
                         @class([
-                            'bg-gray-200' => $campaign->status === 'draft',
-                            'bg-yellow-200' => $campaign->status === 'scheduled',
-                            'bg-green-200' => $campaign->status === 'sent',
+                            'bg-gray-200' => $subscriber->status === 'unsubscribed',
+                            'bg-green-200' => $subscriber->status === 'active',
                         ])">
-                        {{ ucfirst($campaign->status) }}
+                        {{ ucfirst($subscriber->status) }}
                     </span>
                 </td>
 
-                <td class="py-2">{{ $campaign->scheduled_at }}</td>
-
                 <td class="text-right space-x-2">
-                    <a href="{{ route('campaigns.edit', $campaign) }}"
-                       class="text-blue-600">
-                        Edit
-                    </a>
-
                     <button
-                        wire:click="delete({{ $campaign->id }})"
+                        wire:click="delete({{ $subscriber->id }})"
                         wire:confirm="Are you sure?"
                         class="text-red-600">
                         Delete
@@ -139,7 +136,7 @@ new class extends Component
         @empty
             <tr>
                 <td colspan="3" class="py-4 text-center text-gray-500">
-                    No campaigns yet.
+                    No subscribers yet.
                 </td>
             </tr>
         @endforelse
@@ -147,6 +144,6 @@ new class extends Component
     </table>
 
     <div class="mt-4">
-        {{ $this->campaigns->links() }}
+        {{ $this->subscribers->links() }}
     </div>
 </div>

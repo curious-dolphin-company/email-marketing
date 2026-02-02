@@ -107,7 +107,12 @@ new class extends Component
         <tbody>
         @forelse ($this->campaigns as $campaign)
             <tr class="border-b">
-                <td class="py-2">{{ $campaign->name }}</td>
+                <td class="py-2">
+                    <a href="{{ route('campaigns.edit', $campaign->id) }}"
+                       class="text-blue-600">
+                       {{ $campaign->name }}
+                    </a>
+                </td>
 
                 <td>
                     <span class="px-2 py-1 text-sm rounded
@@ -123,10 +128,6 @@ new class extends Component
                 <td class="py-2">{{ $campaign->scheduled_at }}</td>
 
                 <td class="text-right space-x-2">
-                    <a href="{{ route('campaigns.edit', $campaign) }}"
-                       class="text-blue-600">
-                        Edit
-                    </a>
 
                     <button
                         wire:click="delete({{ $campaign->id }})"

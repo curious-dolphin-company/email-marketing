@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    
     Route::get('/campaigns', function () {
         return view('campaigns.index');
     })->name('campaigns.index');
