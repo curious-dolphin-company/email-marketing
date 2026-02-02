@@ -40,6 +40,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/subscribers', function () {
         return view('subscribers.index');
     })->name('subscribers.index');
+
+    Route::get('/subscribers/create', function () {
+        return view('subscribers.create');
+    })->name('subscribers.create');
+
+    Route::get('/subscribers/{subscriberId}/edit', function (int $subscriberId) {
+        return view('subscribers.edit', compact('subscriberId'));
+    })->name('subscribers.edit');
 });
 
 /*
