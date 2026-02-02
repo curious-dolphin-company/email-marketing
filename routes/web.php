@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Campaigns\CampaignList;
+use App\Livewire\Campaigns\CampaignForm;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +27,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campaigns', function () {
         return view('campaigns.index');
     })->name('campaigns.index');
+
+    Route::get('/campaigns/create', function () {
+        return view('campaigns.create');
+    })->name('campaigns.create');
+
+    Route::get('/campaigns/{campaignId}/edit', function (int $campaignId) {
+        return view('campaigns.edit', compact('campaignId'));
+    })->name('campaigns.edit');
+
 
     Route::get('/subscribers', function () {
         return view('subscribers.index');

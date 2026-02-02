@@ -6,8 +6,8 @@
     </x-slot>
 
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-6 text-gray-900">
-            <p class="text-gray-600">{{ __('Manage your email campaigns.') }}</p>
+        <div class="p-6">
+            <livewire:campaign.list />
         </div>
     </div>
 </x-app-layout>
