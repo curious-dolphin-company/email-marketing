@@ -46,6 +46,15 @@ new class extends Component
         session()->flash('success', 'Subscriber deleted successfully.');
     }
 
+    public function unsubscribe(int $id): void
+    {
+        Subscriber::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->update(['status' => Subscriber::STATUS_UNSUBSCRIBED]);
+
+        session()->flash('success', 'Subscriber unsubscribe successfully.');
+    }
+
 };
 ?>
 
@@ -108,7 +117,7 @@ new class extends Component
             <tr class="border-b">
                 <td class="py-2">
                     <a href="{{ route('subscribers.edit', $subscriber->id) }}" class="text-blue-600">
-                        {{ $subscriber->name }}
+                        {{ empty($subscriber->name) ? '[Empty Name]' : $subscriber->name }}
                     </a>
                 </td>
 
@@ -125,6 +134,15 @@ new class extends Component
                 </td>
 
                 <td class="text-right space-x-2">
+                    @if ($subscriber->status === 'active')
+                        <button
+                            wire:click="unsubscribe({{ $subscriber->id }})"
+                            wire:confirm="Are you sure?"
+                            class="text-yellow-600">
+                            Unsubscribe
+                        </button>
+                    @else
+                    @endif
                     <button
                         wire:click="delete({{ $subscriber->id }})"
                         wire:confirm="Are you sure?"

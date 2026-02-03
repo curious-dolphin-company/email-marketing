@@ -3,14 +3,14 @@
 use Livewire\Component;
 use App\Models\Subscriber;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 
 new class extends Component
 {
     public ?Subscriber $subscriber = null;
 
-    public string $name = '';
-    public string $subject = '';
+    public ?string $name = '';
     public string $email = '';
     public string $status = Subscriber::STATUS_ACTIVE;
 
@@ -35,9 +35,14 @@ new class extends Component
     protected function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:10000'],
-            'status' => ['required'],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('subscribers')
+                    ->where('user_id', auth()->id())
+                    ->ignore($this->subscriber?->id),
+            ],
+            'name' => ['nullable', 'string', 'max:255'],
         ];
     }
 

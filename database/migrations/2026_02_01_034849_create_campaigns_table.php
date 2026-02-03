@@ -22,7 +22,6 @@ return new class extends Migration
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();
 
-            $table->index('status');
             $table->index(['user_id', 'status']);
         });
     }
