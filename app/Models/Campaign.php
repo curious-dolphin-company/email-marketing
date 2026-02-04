@@ -12,6 +12,8 @@ class Campaign extends Model
 
     public const STATUS_SCHEDULED = 'scheduled';
 
+    public const STATUS_SENDING = 'sending';
+
     public const STATUS_SENT = 'sent';
 
     protected $fillable = [
@@ -57,6 +59,11 @@ class Campaign extends Model
     public function isScheduled(): bool
     {
         return $this->status === self::STATUS_SCHEDULED;
+    }
+
+    public function isSending(): bool
+    {
+        return $this->status === self::STATUS_SENDING;
     }
 
     public function isSent(): bool
