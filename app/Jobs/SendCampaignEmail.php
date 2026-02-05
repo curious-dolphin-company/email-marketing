@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 use App\Mail\CampaignEmail;
 use App\Models\Campaign;
@@ -32,6 +33,8 @@ class SendCampaignEmail implements ShouldQueue
      */
     public function handle(): void
     {
+
+
         $campaign = Campaign::find($this->campaignId);
         $subscriber = Subscriber::find($this->subscriberId);
     
@@ -67,9 +70,15 @@ class SendCampaignEmail implements ShouldQueue
     
             $campaign->increment('sent_count');
         } catch (\Throwable $e) {
+            Log::error('Failed to send campaign email', [
+                'campaign' => $campaign,
+                'subscriber' => $subscriber,
+                'error' => $e,
+            ]);
+
             $campaignSend->update([
                 'status' => 'failed',
-                'error'  => $e->getMessage(),
+                'error'  => substr($e->getMessage(), 0, 255),
             ]);
     
             $campaign->increment('failed_count');

@@ -16,6 +16,7 @@ class CampaignSend extends Model
     protected $fillable = [
         'campaign_id',
         'subscriber_id',
+        'error',
         'status',
         'sent_at',
     ];

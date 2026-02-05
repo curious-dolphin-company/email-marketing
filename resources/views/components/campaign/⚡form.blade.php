@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Models\Campaign;
 use App\Models\Subscriber;
+use App\Models\CampaignSend;
 use App\Jobs\SendCampaignEmail;
 
 
@@ -64,7 +65,7 @@ new class extends Component
 
             session()->flash('success', 'Campaign updated successfully.');
         } else {
-            $campaign = Campaign::create([
+            $this->campaign = $campaign = Campaign::create([
                 'user_id' => Auth::id(),
                 'name' => $this->name,
                 'subject' => $this->subject,
@@ -74,9 +75,9 @@ new class extends Component
             ]);
 
             $this->savedCampaignId = $campaign->id;
+            $this->populateData($campaign);
 
             session()->flash('created', 'Campaign created successfully.');
-            $this->reset(['name', 'subject', 'body', 'scheduled_at']);
         }
     }
 
@@ -118,7 +119,37 @@ new class extends Component
         
         session()->flash('success', 'Campaign is being sent.');        
     }
+
+    public function retryFailed(): void
+    {
+        $this->campaign->refresh();
+    
+        $failedSends = CampaignSend::where('campaign_id', $this->campaign->id)
+            ->where('status', 'failed')
+            ->get();
+    
+        if ($failedSends->isEmpty()) {
+            return;
+        }
+    
+        $this->campaign->scheduled_at = now();
+        $this->campaign->status = Campaign::STATUS_SENDING;
+        $this->campaign->failed_count = 0;
+        $this->campaign->save();
+        $this->populateData($this->campaign);
+    
+        foreach ($failedSends as $send) {
+            SendCampaignEmail::dispatch(
+                $send->campaign_id,
+                $send->subscriber_id
+            );
+        }
+    
+        session()->flash('success', 'Retrying failed emails.');
+    }
+    
 }
+
 ?>
 
 <div>
@@ -134,7 +165,7 @@ new class extends Component
     @endif
 
     <form wire:submit="save" class="space-y-6">
-        @if ($campaign->status == 'draft' && !session()->has('created'))
+        @if ((!$campaign || $campaign->status == 'draft') && !session()->has('created'))
             {{-- Name --}}
             <div>
                 <label class="block text-sm font-medium mb-1">
@@ -194,7 +225,7 @@ new class extends Component
                     <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
-        @elseif ($campaign->status != 'draft')
+        @elseif ($campaign?->status != 'draft')
             {{-- Name --}}
             <div>
                 <label class="block text-sm font-medium mb-1">
@@ -297,27 +328,49 @@ new class extends Component
             >
                 View All Campaigns
             </a>
-            @elseif ($campaign->status != 'sending' && $campaign->status != 'sent')
-            <button
-                type="submit"
-                class="bg-black text-white px-4 py-2 rounded"
-            >
-                {{ $campaign ? 'Update Campaign' : 'Create Campaign' }}
-            </button>
-            <button
-                type="button"
-                wire:click="sendCampaign"
-                wire:confirm="Are you sure to send campaign email to all active subscribers?"
-                class="bg-red-600 text-white px-4 py-2 rounded"
-            >
-                Send Campaign Now
-            </button>
+            @else
+                @if (!$campaign)
+                    <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Create Campaign </button>
+
+                @elseif($campaign->status == 'draft')
+
+                    <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Update Campaign </button>
+                    <button
+                        type="button"
+                        wire:click="sendCampaign"
+                        wire:confirm="Are you sure to send campaign email to all active subscribers?"
+                        class="bg-red-600 text-white px-4 py-2 rounded"
+                    >
+                        Send Campaign Now
+                    </button>
+
+                @elseif($campaign->status == 'draft')
+
+                    <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Update Campaign </button>
+                    <button
+                        type="button"
+                        wire:click="sendCampaign"
+                        wire:confirm="Are you sure to send campaign email to all active subscribers?"
+                        class="bg-red-600 text-white px-4 py-2 rounded"
+                    >
+                        Send Campaign Now
+                    </button>
+
+                @elseif($campaign->status == 'failed')
+
+                    <button
+                        type="button"
+                        wire:click="retryFailed"
+                        wire:confirm="Are you sure to retry the failed sends?"
+                        class="bg-red-600 text-white px-4 py-2 rounded"
+                    >
+                        Retry Send
+                    </button>
+
+                @endif
+
             <a href="/campaigns" class="border px-4 py-2 rounded text-center">
-                Cancel
-            </a>
-            @elseif ($campaign->status == 'sending')
-            <a href="/campaigns" class="border px-4 py-2 rounded text-center">
-                Close
+                {{ $campaign?->status == 'sending' || $campaign?->status == 'sent' ? 'Close' : 'Cancel' }}
             </a>
             @endif
         </div>
