@@ -70,4 +70,15 @@ class Campaign extends Model
     {
         return $this->status === self::STATUS_SENT;
     }
+
+    public function getProgressPercentAttribute(): int
+    {
+        if ($this->total_recipients === 0) {
+            return 0;
+        }
+    
+        return (int) round(
+            (($this->sent_count + $this->failed_count) / $this->total_recipients) * 100
+        );
+    }
 }

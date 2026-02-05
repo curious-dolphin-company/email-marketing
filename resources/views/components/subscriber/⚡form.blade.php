@@ -63,7 +63,7 @@ new class extends Component
                 'user_id' => Auth::id(),
                 'name' => $this->name,
                 'email' => $this->email,
-                'status' => 'draft',
+                'status' => Subscriber::STATUS_ACTIVE,
             ]);
 
             $this->savedSubscriberId = $subscriber->id;

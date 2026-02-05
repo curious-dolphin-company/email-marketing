@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Models\Campaign;
 use App\Models\Subscriber;
-use App\Models\SendCampaignEmail;
+use App\Jobs\SendCampaignEmail;
 
 
 new class extends Component
@@ -28,11 +28,7 @@ new class extends Component
                 ->firstOrFail();
     
             $this->campaign = $campaign;
-            $this->name = $campaign->name;
-            $this->subject = $campaign->subject;
-            $this->body = $campaign->body;
-            $this->status = $campaign->status;
-            $this->scheduled_at = $campaign->scheduled_at;
+            $this->populateData($campaign);
         }
     }
     
@@ -42,8 +38,16 @@ new class extends Component
             'name' => ['required', 'string', 'max:255'],
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:10000'],
-            'scheduled_at' => ['required'],
         ];
+    }
+
+    public function populateData($campaign) : void
+    {
+        \Log::debug(['campaign' => $campaign]);
+        $this->name = $campaign->name;
+        $this->subject = $campaign->subject;
+        $this->body = $campaign->body;
+        $this->scheduled_at = $campaign->scheduled_at;
     }
 
     public function save(): void
@@ -89,24 +93,27 @@ new class extends Component
 
     public function sendCampaign(): void 
     {
-        $campaign = Campaign::where('id', $this->campaign->id)
-        ->where('user_id', auth()->id())
-        ->firstOrFail();
+        $this->campaign->refresh();
     
-        $subscribers = Subscriber::where('user_id', auth()->id())
+        $subscribers = Subscriber::where('user_id', Auth::id())
         ->where('status', Subscriber::STATUS_ACTIVE)
         ->get();
     
-        $campaign->update([
-            'scheduled_at' => now(),
-            'status' => Campaign::STATUS_SENDING,
-            'total_recipients' => $subscribers->count(),
-            'sent_count' => 0,
-            'failed_count' => 0,
-        ]);
+        \Log::debug(['$subscribers' => $subscribers->count()]);
+
+        $this->campaign->scheduled_at = now();
+        $this->campaign->status = Campaign::STATUS_SENDING;
+        $this->campaign->total_recipients = $subscribers->count();
+        $this->campaign->sent_count = 0;
+        $this->campaign->failed_count = 0;
+        $this->campaign->save();
+        $this->populateData($this->campaign);
             
         foreach ($subscribers as $subscriber) {
-            SendCampaignEmail::dispatch($campaign, $subscriber);
+            SendCampaignEmail::dispatch(
+                $this->campaign->id,
+                $subscriber->id
+            );
         }
         
         session()->flash('success', 'Campaign is being sent.');        
@@ -119,28 +126,6 @@ new class extends Component
         <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
             {{ session('created') }}
         </div>
-        <div class="flex flex-col sm:flex-row gap-3">
-            <button
-                wire:click="createAnother"
-                class="bg-black text-white px-4 py-2 rounded"
-            >
-                Create Another Campaign
-            </button>
-
-            <a
-                href="/campaigns/{{ $savedCampaignId }}/edit"
-                class="border px-4 py-2 rounded text-center"
-            >
-                Edit Campaign
-            </a>
-
-            <a
-                href="/campaigns"
-                class="border px-4 py-2 rounded text-center"
-            >
-                View All Campaigns
-            </a>
-        </div>
         
     @elseif (session()->has('success'))
         <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
@@ -148,8 +133,8 @@ new class extends Component
         </div>
     @endif
 
-    @if (!session()->has('created'))
-        <form wire:submit="save" class="space-y-6">
+    <form wire:submit="save" class="space-y-6">
+        @if ($campaign->status == 'draft' && !session()->has('created'))
             {{-- Name --}}
             <div>
                 <label class="block text-sm font-medium mb-1">
@@ -205,34 +190,138 @@ new class extends Component
                     wire:model.defer="scheduled_at"
                     class="w-full border rounded px-3 py-2"
                 >
-                @error('subject')
+                @error('scheduled_at')
                     <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
-            
-            {{-- Actions --}}
-            <div class="flex items-center gap-4">
-                @if ($status != 'sending' && $status != 'sent')
-                <button
-                    type="submit"
-                    class="bg-black text-white px-4 py-2 rounded"
-                >
-                    {{ $campaign ? 'Update Campaign' : 'Create Campaign' }}
-                </button>
-                <button
-                    type="button"
-                    wire:click="sendCampaign"
-                    wire:confirm="Are you sure to send campaign email to all active subscribers?"
-                    class="bg-red-600 text-white px-4 py-2 rounded"
-                >
-                    Send Campaign Now
-                </button>
-                @endif
-
-                <a href="/campaigns" class="border px-4 py-2 rounded text-center">
-                    Cancel
-                </a>
+        @elseif ($campaign->status != 'draft')
+            {{-- Name --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Campaign Name
+                </label>
+                <p>{{ $name }}</p>
             </div>
-        </form>
-    @endif
+
+            {{-- Subject --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Email Subject
+                </label>
+                <p>{{ $subject }}</p>
+            </div>
+
+            {{-- Body --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Email Body
+                </label>
+                <p>{{ $body }}</p>
+            </div>
+
+            {{-- Scheduled At --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Scheduled At
+                </label>
+                <p>{{ $scheduled_at }}</p>
+            </div>
+        
+            {{-- Status --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Status
+                </label>
+                <p>
+                    <span 
+                        @class([
+                            'px-2 py-1 text-sm rounded text-white',
+                            'bg-gray-500' => $campaign->status === 'draft',
+                            'bg-green-500' => $campaign->status === 'sent',
+                            'bg-blue-500' => $campaign->status === 'sending',
+                            'bg-red-500' => $campaign->status === 'failed',
+                        ])
+                    >
+                        {{ ucfirst($campaign->status) }}
+                    </span>
+                </p>
+            </div>
+            @if ($campaign->status === 'sending')
+                <div wire:poll.2s>
+                
+                    <div class="mt-2 space-y-1">
+                        <div class="text-sm text-gray-600">
+                            Sending… {{ $campaign->sent_count + $campaign->failed_count }}
+                            / {{ $campaign->total_recipients }}
+                        </div>
+
+                        {{-- Progress bar --}}
+                        <div class="w-full bg-gray-200 rounded h-2 overflow-hidden">
+                            <div
+                                class="bg-blue-600 h-2 transition-all duration-500"
+                                style="width: {{ $campaign->progress_percent }}%"
+                            ></div>
+                        </div>
+
+                        @if ($campaign->failed_count > 0)
+                            <div class="text-sm text-red-600">
+                                {{ $campaign->failed_count }} failed
+                            </div>
+                        @endif
+                    </div>
+                
+                </div>
+            @endif
+        @endif
+
+        {{-- Actions --}}
+        <div class="flex items-center gap-4">
+            @if (session()->has('created'))
+            <button
+            wire:click="createAnother"
+            class="bg-black text-white px-4 py-2 rounded"
+            >
+                Create Another Campaign
+            </button>
+
+            <a
+                href="/campaigns/{{ $savedCampaignId }}/edit"
+                class="border px-4 py-2 rounded text-center"
+            >
+                Edit Campaign
+            </a>
+
+            <a
+                href="/campaigns"
+                class="border px-4 py-2 rounded text-center"
+            >
+                View All Campaigns
+            </a>
+            @elseif ($campaign->status != 'sending' && $campaign->status != 'sent')
+            <button
+                type="submit"
+                class="bg-black text-white px-4 py-2 rounded"
+            >
+                {{ $campaign ? 'Update Campaign' : 'Create Campaign' }}
+            </button>
+            <button
+                type="button"
+                wire:click="sendCampaign"
+                wire:confirm="Are you sure to send campaign email to all active subscribers?"
+                class="bg-red-600 text-white px-4 py-2 rounded"
+            >
+                Send Campaign Now
+            </button>
+            <a href="/campaigns" class="border px-4 py-2 rounded text-center">
+                Cancel
+            </a>
+            @elseif ($campaign->status == 'sending')
+            <a href="/campaigns" class="border px-4 py-2 rounded text-center">
+                Close
+            </a>
+            @endif
+        </div>
+
+
+    </form>
 </div>
