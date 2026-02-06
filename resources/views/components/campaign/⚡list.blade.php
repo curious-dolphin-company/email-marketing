@@ -118,10 +118,11 @@ new class extends Component
                     <span 
                         @class([
                             'px-2 py-1 text-sm rounded text-white',
-                            'bg-gray-500' => $campaign->status === 'draft',
-                            'bg-green-500' => $campaign->status === 'sent',
-                            'bg-blue-500' =>  $campaign->status === 'sending',
-                            'bg-red-500' =>  $campaign->status === 'failed',
+                            'bg-gray-500' => $campaign->isDraft(),
+                            'bg-yellow-500' => $campaign->isScheduled(),
+                            'bg-green-500' => $campaign->isSent(),
+                            'bg-blue-500' =>  $campaign->isSending(),
+                            'bg-red-500' =>  $campaign->isFailed(),
                         ])
                     >
                         {{ ucfirst($campaign->status) }}

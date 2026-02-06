@@ -33,7 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('campaigns.create');
     })->name('campaigns.create');
 
-    Route::get('/campaigns/{campaignId}/edit', function (int $campaignId) {
+    Route::get('/campaigns/{campaignId}/', function (int $campaignId) {
         return view('campaigns.edit', compact('campaignId'));
     })->name('campaigns.edit');
 
@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('subscribers.create');
     })->name('subscribers.create');
 
-    Route::get('/subscribers/{subscriberId}/edit', function (int $subscriberId) {
+    Route::get('/subscribers/{subscriberId}/', function (int $subscriberId) {
         return view('subscribers.edit', compact('subscriberId'));
     })->name('subscribers.edit');
 });

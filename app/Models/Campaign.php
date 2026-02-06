@@ -16,6 +16,8 @@ class Campaign extends Model
 
     public const STATUS_SENT = 'sent';
 
+    public const STATUS_FAILED = 'failed';
+
     protected $fillable = [
         'user_id',
         'name',
@@ -69,6 +71,11 @@ class Campaign extends Model
     public function isSent(): bool
     {
         return $this->status === self::STATUS_SENT;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->status === self::STATUS_FAILED;
     }
 
     public function getProgressPercentAttribute(): int

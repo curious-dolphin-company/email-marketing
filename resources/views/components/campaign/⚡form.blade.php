@@ -16,7 +16,6 @@ new class extends Component
     public string $name = '';
     public string $subject = '';
     public string $body = '';
-    public string $status = Campaign::STATUS_DRAFT;
     public ?string $scheduled_at = null;
 
     public ?int $savedCampaignId = null;
@@ -56,12 +55,14 @@ new class extends Component
         $this->validate();
 
         if ($this->campaign) {
-            $this->campaign->update([
-                'name' => $this->name,
-                'subject' => $this->subject,
-                'body' => $this->body,
-                'scheduled_at' => $this->scheduled_at,
-            ]);
+            $this->campaign->name = $this->name;
+            $this->campaign->subject = $this->subject;
+            $this->campaign->body = $this->body;
+            $this->campaign->scheduled_at = $this->scheduled_at;
+            if ($this->campaign->status == Campaign::STATUS_DRAFT && $this->campaign->scheduled_at) {
+                $this->campaign->status = Campaign::STATUS_SCHEDULED;
+            }
+            $this->campaign->save();
 
             session()->flash('success', 'Campaign updated successfully.');
         } else {
@@ -165,7 +166,7 @@ new class extends Component
     @endif
 
     <form wire:submit="save" class="space-y-6">
-        @if ((!$campaign || $campaign->status == 'draft') && !session()->has('created'))
+        @if ((!$campaign || $campaign->isDraft() || $campaign->isScheduled()) && !session()->has('created'))
             {{-- Name --}}
             <div>
                 <label class="block text-sm font-medium mb-1">
@@ -225,7 +226,7 @@ new class extends Component
                     <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
-        @elseif ($campaign?->status != 'draft')
+        @else
             {{-- Name --}}
             <div>
                 <label class="block text-sm font-medium mb-1">
@@ -267,17 +268,18 @@ new class extends Component
                     <span 
                         @class([
                             'px-2 py-1 text-sm rounded text-white',
-                            'bg-gray-500' => $campaign->status === 'draft',
-                            'bg-green-500' => $campaign->status === 'sent',
-                            'bg-blue-500' => $campaign->status === 'sending',
-                            'bg-red-500' => $campaign->status === 'failed',
+                            'bg-gray-500' => $campaign->isDraft(),
+                            'bg-yellow-500' => $campaign->isScheduled(),
+                            'bg-green-500' => $campaign->isSent(),
+                            'bg-blue-500' =>  $campaign->isSending(),
+                            'bg-red-500' =>  $campaign->isFailed(),
                         ])
                     >
                         {{ ucfirst($campaign->status) }}
                     </span>
                 </p>
             </div>
-            @if ($campaign->status === 'sending')
+            @if ($campaign->isSending())
                 <div wire:poll.2s>
                 
                     <div class="mt-2 space-y-1">
@@ -316,7 +318,7 @@ new class extends Component
             </button>
 
             <a
-                href="/campaigns/{{ $savedCampaignId }}/edit"
+                href="/campaigns/{{ $savedCampaignId }}/"
                 class="border px-4 py-2 rounded text-center"
             >
                 Edit Campaign
@@ -332,7 +334,7 @@ new class extends Component
                 @if (!$campaign)
                     <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Create Campaign </button>
 
-                @elseif($campaign->status == 'draft')
+                @elseif($campaign->isDraft() || $campaign->isScheduled())
 
                     <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Update Campaign </button>
                     <button
@@ -344,19 +346,7 @@ new class extends Component
                         Send Campaign Now
                     </button>
 
-                @elseif($campaign->status == 'draft')
-
-                    <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Update Campaign </button>
-                    <button
-                        type="button"
-                        wire:click="sendCampaign"
-                        wire:confirm="Are you sure to send campaign email to all active subscribers?"
-                        class="bg-red-600 text-white px-4 py-2 rounded"
-                    >
-                        Send Campaign Now
-                    </button>
-
-                @elseif($campaign->status == 'failed')
+                @elseif($campaign->isFailed())
 
                     <button
                         type="button"
@@ -370,7 +360,7 @@ new class extends Component
                 @endif
 
             <a href="/campaigns" class="border px-4 py-2 rounded text-center">
-                {{ $campaign?->status == 'sending' || $campaign?->status == 'sent' ? 'Close' : 'Cancel' }}
+                Close
             </a>
             @endif
         </div>

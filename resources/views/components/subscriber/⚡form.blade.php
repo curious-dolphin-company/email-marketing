@@ -99,7 +99,7 @@ new class extends Component
             </button>
 
             <a
-                href="/subscribers/{{ $savedSubscriberId }}/edit"
+                href="/subscribers/{{ $savedSubscriberId }}/"
                 class="border px-4 py-2 rounded text-center"
             >
                 Edit Subscriber
