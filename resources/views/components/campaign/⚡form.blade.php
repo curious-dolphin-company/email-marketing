@@ -219,6 +219,7 @@ new class extends Component
                 </label>
                 <input
                     type="datetime-local"
+                    step="60"
                     wire:model.defer="scheduled_at"
                     class="w-full border rounded px-3 py-2"
                 >
