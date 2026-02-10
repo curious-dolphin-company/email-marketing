@@ -129,7 +129,12 @@ new class extends Component
                     </span>
                 </td>
 
-                <td class="py-2">{{ $campaign->scheduled_at }}</td>
+                <td class="py-2">
+                    @if($campaign->scheduled_at)
+                        {{ $campaign->scheduled_at }} 
+                        ({{ $campaign->scheduled_at->diffForHumans(now(), ['parts' => 2]) }})
+                    @endif
+                </td>
 
                 <td class="text-right space-x-2">
 

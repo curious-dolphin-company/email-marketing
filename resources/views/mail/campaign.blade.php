@@ -1,6 +1,6 @@
-{{ $campaign->body }}
+{{ $body }}
 
 ---
 
-You are receiving this because you subscribed.
-Unsubscribe link here later.
+Unsubscribe: {{ $unsubscribe_url }} 
+Powered by {{ config('app.name') }} - {{ config('app.url') }} 

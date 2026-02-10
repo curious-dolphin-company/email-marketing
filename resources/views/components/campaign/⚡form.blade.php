@@ -72,7 +72,7 @@ new class extends Component
                 'subject' => $this->subject,
                 'body' => $this->body,
                 'scheduled_at' => $this->scheduled_at,
-                'status' => Campaign::STATUS_DRAFT,
+                'status' => $this->scheduled_at ? Campaign::STATUS_SCHEDULED : Campaign::STATUS_DRAFT,
             ]);
 
             $this->savedCampaignId = $campaign->id;
@@ -91,34 +91,6 @@ new class extends Component
             'scheduled_at',
             'savedCampaignId',
         ]);
-    }
-
-    public function sendCampaign(): void 
-    {
-        $this->campaign->refresh();
-    
-        $subscribers = Subscriber::where('user_id', Auth::id())
-        ->where('status', Subscriber::STATUS_ACTIVE)
-        ->get();
-    
-        \Log::debug(['$subscribers' => $subscribers->count()]);
-
-        $this->campaign->scheduled_at = now();
-        $this->campaign->status = Campaign::STATUS_SENDING;
-        $this->campaign->total_recipients = $subscribers->count();
-        $this->campaign->sent_count = 0;
-        $this->campaign->failed_count = 0;
-        $this->campaign->save();
-        $this->populateData($this->campaign);
-            
-        foreach ($subscribers as $subscriber) {
-            SendCampaignEmail::dispatch(
-                $this->campaign->id,
-                $subscriber->id
-            );
-        }
-        
-        session()->flash('success', 'Campaign is being sent.');        
     }
 
     public function retryFailed(): void
@@ -166,7 +138,7 @@ new class extends Component
     @endif
 
     <form wire:submit="save" class="space-y-6">
-        @if ((!$campaign || $campaign->isDraft() || $campaign->isScheduled()) && !session()->has('created'))
+        @if ((!$campaign || $campaign->isEditable()) && !session()->has('created'))
             {{-- Name --}}
             <div>
                 <label class="block text-sm font-medium mb-1">
@@ -233,7 +205,7 @@ new class extends Component
                 <label class="block text-sm font-medium mb-1">
                     Campaign Name
                 </label>
-                <p>{{ $name }}</p>
+                <p>{{ $campaign->name }}</p>
             </div>
 
             {{-- Subject --}}
@@ -241,7 +213,7 @@ new class extends Component
                 <label class="block text-sm font-medium mb-1">
                     Email Subject
                 </label>
-                <p>{{ $subject }}</p>
+                <p>{{ $campaign->subject }}</p>
             </div>
 
             {{-- Body --}}
@@ -249,7 +221,7 @@ new class extends Component
                 <label class="block text-sm font-medium mb-1">
                     Email Body
                 </label>
-                <p>{{ $body }}</p>
+                <p>{{ $campaign->body }}</p>
             </div>
 
             {{-- Scheduled At --}}
@@ -257,7 +229,10 @@ new class extends Component
                 <label class="block text-sm font-medium mb-1">
                     Scheduled At
                 </label>
-                <p>{{ $scheduled_at }}</p>
+                <p>
+                    {{ $campaign->scheduled_at }} 
+                    ({{ $campaign->scheduled_at->diffForHumans(now(), ['parts' => 2]) }})
+                </p>
             </div>
         
             {{-- Status --}}
@@ -335,17 +310,9 @@ new class extends Component
                 @if (!$campaign)
                     <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Create Campaign </button>
 
-                @elseif($campaign->isDraft() || $campaign->isScheduled())
+                @elseif($campaign->isEditable())
 
                     <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Update Campaign </button>
-                    <button
-                        type="button"
-                        wire:click="sendCampaign"
-                        wire:confirm="Are you sure to send campaign email to all active subscribers?"
-                        class="bg-red-600 text-white px-4 py-2 rounded"
-                    >
-                        Send Campaign Now
-                    </button>
 
                 @elseif($campaign->isFailed())
 

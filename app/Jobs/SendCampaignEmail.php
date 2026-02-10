@@ -41,7 +41,10 @@ class SendCampaignEmail implements ShouldQueue
         if (! $campaign || ! $subscriber) {
             return;
         }
-    
+        if ($subscriber->status !== Subscriber::STATUS_ACTIVE) {
+            return;
+        }
+        
         // Idempotency: avoid duplicate sends
         $campaignSend = CampaignSend::firstOrCreate(
             [

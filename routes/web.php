@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UnsubscribeController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Campaigns\CampaignList;
 use App\Livewire\Campaigns\CampaignForm;
@@ -61,5 +62,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware('throttle:60,1')->get('/unsubscribe/{token}', [UnsubscribeController::class, 'unsubscribe'])
+    ->name('unsubscribe');
+
 
 require __DIR__.'/auth.php';

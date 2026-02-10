@@ -53,6 +53,14 @@ class Campaign extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Not allowing to edit campaign when close ti dispatching time.
+     */
+     public function isEditable(): bool
+    {
+        return $this->status === self::STATUS_DRAFT || ($this->status === self::STATUS_SCHEDULED && $this->scheduled_at->diffInSeconds(now()) < -120);
+    }
+
     public function isDraft(): bool
     {
         return $this->status === self::STATUS_DRAFT;

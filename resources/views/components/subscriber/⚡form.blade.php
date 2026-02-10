@@ -4,6 +4,7 @@ use Livewire\Component;
 use App\Models\Subscriber;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 
 new class extends Component
@@ -63,6 +64,7 @@ new class extends Component
                 'user_id' => Auth::id(),
                 'name' => $this->name,
                 'email' => $this->email,
+                'unsubscribe_token' => Str::uuid(),
                 'status' => Subscriber::STATUS_ACTIVE,
             ]);
 

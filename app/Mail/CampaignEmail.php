@@ -16,6 +16,9 @@ class CampaignEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public string $body = '';
+    public string $unsubscribe_url = '';
+
     /**
      * Create a new message instance.
      */
@@ -24,7 +27,17 @@ class CampaignEmail extends Mailable
         public Subscriber $subscriber
     )
     {
-        //
+        $this->subject = $this->campaign->subject;
+        $this->body = $this->campaign->body;
+        $TOKENS = ['name', 'email'];
+        foreach ($TOKENS as $token) {
+            $this->subject = str_replace("{{" . $token . "}}", $this->subscriber->{$token}, $this->subject);
+            $this->body = str_replace("{{" . $token . "}}", $this->subscriber->{$token}, $this->body);
+        }
+
+        $this->unsubscribe_url = route('unsubscribe', [
+            'token' => $subscriber->unsubscribe_token,
+        ]);
     }
 
     /**
@@ -33,7 +46,7 @@ class CampaignEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->campaign->subject,
+            subject: $this->subject,
         );
     }
 
@@ -43,7 +56,7 @@ class CampaignEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.campaign',
+            text: 'mail.campaign',
         );
     }
 

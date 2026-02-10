@@ -11,5 +11,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('campaigns:dispatch-scheduled')
     ->everyMinute()
-    ->emailOutputOnFailure('taylor@example.com')
     ->withoutOverlapping();

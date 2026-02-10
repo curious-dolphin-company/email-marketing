@@ -124,11 +124,13 @@ new class extends Component
                 <td class="py-2">{{ $subscriber->email }}</td>
 
                 <td>
-                    <span class="px-2 py-1 text-sm rounded 
+                    <span
                         @class([
-                            'bg-gray-200' => $subscriber->status === 'unsubscribed',
-                            'bg-green-200' => $subscriber->status === 'active',
-                        ])">
+                            'px-2 py-1 text-sm rounded text-white',
+                            'bg-gray-500' => $subscriber->isUnsubscribed(),
+                            'bg-green-500' => $subscriber->isActive(),
+                        ])
+                    >
                         {{ ucfirst($subscriber->status) }}
                     </span>
                 </td>
