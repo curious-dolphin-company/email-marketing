@@ -56,27 +56,22 @@ new class extends Component
 
 <div class="flex flex-col sm:flex-row gap-3">
     <form wire:submit="applySearch" class="flex gap-2 w-full sm:w-auto">
-        <input
+        <x-text-input
             type="text"
             wire:model.defer="search"
             placeholder="Search campaigns..."
-            class="border rounded px-3 py-2 w-full sm:w-64"
-        >
+            class="w-full sm:w-64"
+        />
 
-        <button
-            type="submit"
-            class="bg-black text-white px-4 py-2 rounded"
-        >
-            Search
-        </button>
+        <x-primary-button>
+                {{ __('Search') }}
+        </x-primary-button>
         @if ($search)
-            <button
-                type="button"
+            <x-secondary-button
                 wire:click="clearSearch"
-                class="border px-4 py-2 rounded"
             >
-                Clear
-            </button>
+                    {{ __('Clear') }}
+            </x-secondary-button>
         @endif
     </form>
 </div>

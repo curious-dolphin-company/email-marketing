@@ -59,41 +59,34 @@ new class extends Component
 ?>
 
 <div>
-    <div class="flex justify-between items-center mb-4">
+    <div class="flex justify-between mb-4">
         <p class="text-gray-600">{{ __('Manage your subscribers.') }}</p>
 
-<div class="flex flex-col sm:flex-row gap-3">
-    <form wire:submit="applySearch" class="flex gap-2 w-full sm:w-auto">
-        <input
-            type="text"
-            wire:model.defer="search"
-            placeholder="Search subscribers..."
-            class="border rounded px-3 py-2 w-full sm:w-64"
+        <form wire:submit="applySearch" class="flex gap-2 w-full sm:w-auto">
+            <x-text-input
+                type="text"
+                wire:model.defer="search"
+                placeholder="Search subscribers..."
+                class="w-full sm:w-64"
+            />
+
+            <x-primary-button>
+                    {{ __('Search') }}
+            </x-primary-button>
+            @if ($search)
+                <x-secondary-button
+                    wire:click="clearSearch"
+                >
+                        {{ __('Clear') }}
+                </x-secondary-button>
+            @endif
+        </form>
+
+        <x-primary-button
+            href="{{ route('subscribers.create') }}"
         >
-
-        <button
-            type="submit"
-            class="bg-black text-white px-4 py-2 rounded"
-        >
-            Search
-        </button>
-        @if ($search)
-            <button
-                type="button"
-                wire:click="clearSearch"
-                class="border px-4 py-2 rounded"
-            >
-                Clear
-            </button>
-        @endif
-    </form>
-</div>
-
-
-        <a href="{{ route('subscribers.create') }}"
-           class="px-4 py-2 rounded bg-black text-white">
-            New Subscriber
-        </a>
+                {{ __('New Subscriber') }}
+        </x-primary-button>
     </div>
 
     @if (session('success'))
