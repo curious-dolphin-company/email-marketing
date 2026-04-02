@@ -89,82 +89,44 @@ new class extends Component
 
 <div>
     @if (session()->has('created'))
-        <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+        <x-message severity="success" class="mb-4">
             {{ session('created') }}
-        </div>
+        </x-message>
         <div class="flex flex-col sm:flex-row gap-3">
-            <button
-                wire:click="createAnother"
-                class="bg-black text-white px-4 py-2 rounded"
-            >
-                Create Another Subscriber
-            </button>
-
-            <a
-                href="/subscribers/{{ $savedSubscriberId }}/"
-                class="border px-4 py-2 rounded text-center"
-            >
-                Edit Subscriber
-            </a>
-
-            <a
-                href="/subscribers"
-                class="border px-4 py-2 rounded text-center"
-            >
-                View All Subscribers
-            </a>
+            <x-button.secondary wire:click="createAnother"> {{ __('Create Another Subscriber') }} </x-button.secondary>
+            <x-button.secondary href="/subscribers/{{ $savedSubscriberId }}/"> {{ __('Edit Subscriber') }} </x-button.secondary>
+            <x-button.secondary href="/subscribers"> {{ __('View All Subscribers') }} </x-button.secondary>
         </div>
         
     @elseif (session()->has('updated'))
-        <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+        <x-message severity="success" class="mb-4">
             {{ session('updated') }}
-        </div>
+        </x-message>
     @endif
 
     @if (!session()->has('created'))
         <form wire:submit="save" class="space-y-6">
             {{-- Name --}}
             <div>
-                <label class="block text-sm font-medium mb-1">
-                    Subscriber Name
-                </label>
-                <input
-                    type="text"
-                    wire:model.defer="name"
-                    class="w-full border rounded px-3 py-2"
-                >
-                @error('name')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
+                <x-input.label for="subscriber-name">{{ __('Subscriber Name') }}</x-input.label>
+                <x-input.text id="subscriber-name" class="block mt-1 w-full" wire:model.defer="name" autofocus />
+                <x-input.error :messages="$errors->get('name')" class="mt-1" />
             </div>
 
             {{-- Email --}}
             <div>
-                <label class="block text-sm font-medium mb-1">
-                    Email
-                </label>
-                <input
-                    type="email"
-                    wire:model.defer="email"
-                    class="w-full border rounded px-3 py-2"
-                >
-                @error('email')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
+                <x-input.label for="email">{{ __('Email') }}</x-input.label>
+                <x-input.text id="email" type="email" class="block mt-1 w-full" wire:model.defer="email" />
+                <x-input.error :messages="$errors->get('email')" class="mt-1" />
             </div>
             
             {{-- Actions --}}
             <div class="flex items-center gap-4">
-                <button
-                    type="submit"
-                    class="bg-black text-white px-4 py-2 rounded"
-                >
+                <x-button.primary>
                     {{ $subscriber ? 'Update Subscriber' : 'Create Subscriber' }}
-                </button>
+                </x-button.primary>
 
-                <a href="/subscribers" class="border px-4 py-2 rounded text-center">
-                    Cancel
-                </a>
+                <x-button.secondary href="/subscribers"> {{ __('Close') }} </x-button.secondary>
             </div>
         </form>
     @endif

@@ -54,39 +54,36 @@ new class extends Component
     <div class="flex justify-between items-center mb-4">
         <p class="text-gray-600">{{ __('Manage your email campaigns.') }}</p>
 
-<div class="flex flex-col sm:flex-row gap-3">
-    <form wire:submit="applySearch" class="flex gap-2 w-full sm:w-auto">
-        <x-text-input
-            type="text"
-            wire:model.defer="search"
-            placeholder="Search campaigns..."
-            class="w-full sm:w-64"
-        />
+        <form wire:submit="applySearch" class="flex items-center gap-2 w-full sm:w-auto">
+            <x-input.text
+                type="text"
+                wire:model.defer="search"
+                placeholder="Search campaigns..."
+                class="w-full sm:w-64"
+            />
 
-        <x-primary-button>
-                {{ __('Search') }}
-        </x-primary-button>
-        @if ($search)
-            <x-secondary-button
-                wire:click="clearSearch"
-            >
-                    {{ __('Clear') }}
-            </x-secondary-button>
-        @endif
-    </form>
-</div>
+            <x-button.primary>
+                    {{ __('Search') }}
+            </x-button.primary>
+            @if ($search)
+                <x-button.secondary
+                    wire:click="clearSearch"
+                >
+                        {{ __('Clear') }}
+                </x-button.secondary>
+            @endif
+        </form>
 
 
-        <a href="{{ route('campaigns.create') }}"
-           class="px-4 py-2 rounded bg-black text-white">
-            New Campaign
-        </a>
+        <x-button.primary href="{{ route('campaigns.create') }}">
+            {{ __('New Campaign') }}
+        </x-button.primary>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 px-4 py-2 bg-green-100 text-green-700 rounded">
+        <x-message severity="success" class="mb-4">
             {{ session('success') }}
-        </div>
+        </x-message>
     @endif
 
     <table class="w-full border-collapse">

@@ -127,77 +127,54 @@ new class extends Component
 
 <div>
     @if (session()->has('created'))
-        <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+        <x-message severity="success" class="mb-4">
             {{ session('created') }}
-        </div>
+        </x-message>
         
     @elseif (session()->has('success'))
-        <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+        <x-message severity="success" class="mb-4">
             {{ session('success') }}
-        </div>
+        </x-message>
     @endif
 
     <form wire:submit="save" class="space-y-6">
         @if ((!$campaign || $campaign->isEditable()) && !session()->has('created'))
             {{-- Name --}}
             <div>
-                <label class="block text-sm font-medium mb-1">
-                    Campaign Name
-                </label>
-                <input
-                    type="text"
-                    wire:model.defer="name"
-                    class="w-full border rounded px-3 py-2"
-                >
-                @error('name')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
+                <x-input.label for="name">{{ __('Campaign Name') }}</x-input.label>
+                <x-input.text id="name" class="block mt-1 w-full" wire:model.defer="name" autofocus />
+                <x-input.error :messages="$errors->get('name')" class="mt-1" />
             </div>
 
             {{-- Subject --}}
             <div>
-                <label class="block text-sm font-medium mb-1">
-                    Email Subject
-                </label>
-                <input
-                    type="text"
-                    wire:model.defer="subject"
-                    class="w-full border rounded px-3 py-2"
-                >
-                @error('subject')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
+                <x-input.label for="subject">{{ __('Email Subject') }}</x-input.label>
+                <x-input.text id="subject" class="block mt-1 w-full" wire:model.defer="subject" />
+                <x-input.error :messages="$errors->get('subject')" class="mt-1" />
             </div>
 
             {{-- Body --}}
             <div>
-                <label class="block text-sm font-medium mb-1">
-                    Email Body (Plain Text)
-                </label>
-                <textarea
+                <x-input.label for="body">{{ __('Email Body (Plain Text)') }}</x-input.label>
+                <x-input.textarea
+                    id="body"
                     wire:model.defer="body"
                     rows="10"
-                    class="w-full border rounded px-3 py-2 font-mono"
-                ></textarea>
-                @error('body')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
+                    class="w-full font-mono"
+                ></x-input.textarea>
+                <x-input.error :messages="$errors->get('body')" class="mt-1" />
             </div>
 
             {{-- Scheduled At --}}
             <div>
-                <label class="block text-sm font-medium mb-1">
-                    Scheduled At
-                </label>
-                <input
+                <x-input.label for="scheduled_at">{{ __('Scheduled At') }}</x-input.label>
+                <x-input.text 
+                    id="scheduled_at" 
+                    class="block mt-1 w-full" 
                     type="datetime-local"
                     step="60"
-                    wire:model.defer="scheduled_at"
-                    class="w-full border rounded px-3 py-2"
-                >
-                @error('scheduled_at')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
+                    wire:model.defer="scheduled_at" />
+                <x-input.error :messages="$errors->get('scheduled_at')" class="mt-1" />
             </div>
         @else
             {{-- Name --}}
@@ -308,28 +285,27 @@ new class extends Component
             </a>
             @else
                 @if (!$campaign)
-                    <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Create Campaign </button>
+
+                    <x-button.primary> Create Campaign </x-button.primary>
 
                 @elseif($campaign->isEditable())
 
-                    <button type="submit" class="bg-black text-white px-4 py-2 rounded" > Update Campaign </button>
+                    <x-button.primary> Update Campaign </x-button.primary>
 
                 @elseif($campaign->isFailed())
 
-                    <button
+                    <x-button.danger
                         type="button"
                         wire:click="retryFailed"
                         wire:confirm="Are you sure to retry the failed sends?"
-                        class="bg-red-600 text-white px-4 py-2 rounded"
                     >
-                        Retry Send
-                    </button>
+                        {{ __('Retry Send') }}
+                    </x-button.danger>
 
                 @endif
 
-            <a href="/campaigns" class="border px-4 py-2 rounded text-center">
-                Close
-            </a>
+                <x-button.secondary href="/campaigns"> {{ __('Close') }} </x-button.secondary>
+
             @endif
         </div>
 

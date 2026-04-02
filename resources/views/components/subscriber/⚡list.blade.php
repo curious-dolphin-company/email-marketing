@@ -59,40 +59,40 @@ new class extends Component
 ?>
 
 <div>
-    <div class="flex justify-between mb-4">
+    <div class="flex justify-between items-center mb-4">
         <p class="text-gray-600">{{ __('Manage your subscribers.') }}</p>
 
-        <form wire:submit="applySearch" class="flex gap-2 w-full sm:w-auto">
-            <x-text-input
+        <form wire:submit="applySearch" class="flex items-center gap-2 w-full sm:w-auto">
+            <x-input.text
                 type="text"
                 wire:model.defer="search"
                 placeholder="Search subscribers..."
                 class="w-full sm:w-64"
             />
 
-            <x-primary-button>
+            <x-button.primary>
                     {{ __('Search') }}
-            </x-primary-button>
+            </x-button.primary>
             @if ($search)
-                <x-secondary-button
+                <x-button.secondary
                     wire:click="clearSearch"
                 >
                         {{ __('Clear') }}
-                </x-secondary-button>
+                </x-button.secondary>
             @endif
         </form>
 
-        <x-primary-button
+        <x-button.primary
             href="{{ route('subscribers.create') }}"
         >
                 {{ __('New Subscriber') }}
-        </x-primary-button>
+        </x-button.primary>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 px-4 py-2 bg-green-100 text-green-700 rounded">
+        <x-message severity="success" class="mb-4">
             {{ session('success') }}
-        </div>
+        </x-message>
     @endif
 
     <table class="w-full border-collapse">
