@@ -117,19 +117,13 @@ new class extends Component
                 <td class="py-2">{{ $subscriber->email }}</td>
 
                 <td>
-                    <span
-                        @class([
-                            'px-2 py-1 text-sm rounded text-white',
-                            'bg-gray-500' => $subscriber->isUnsubscribed(),
-                            'bg-green-500' => $subscriber->isActive(),
-                        ])
-                    >
+                    <x-status-badge :status="$subscriber->status" >
                         {{ ucfirst($subscriber->status) }}
-                    </span>
+                    </x-status-badge>
                 </td>
 
                 <td class="text-right space-x-2">
-                    @if ($subscriber->status === 'active')
+                    @if ($subscriber->isActive())
                         <button
                             wire:click="unsubscribe({{ $subscriber->id }})"
                             wire:confirm="Are you sure?"

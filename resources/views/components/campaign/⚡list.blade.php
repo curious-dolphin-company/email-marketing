@@ -107,18 +107,9 @@ new class extends Component
                 </td>
 
                 <td>
-                    <span 
-                        @class([
-                            'px-2 py-1 text-sm rounded text-white',
-                            'bg-gray-500' => $campaign->isDraft(),
-                            'bg-yellow-500' => $campaign->isScheduled(),
-                            'bg-green-500' => $campaign->isSent(),
-                            'bg-blue-500' =>  $campaign->isSending(),
-                            'bg-red-500' =>  $campaign->isFailed(),
-                        ])
-                    >
+                    <x-status-badge :status="$campaign->status" >
                         {{ ucfirst($campaign->status) }}
-                    </span>
+                    </x-status-badge>
                 </td>
 
                 <td class="py-2">
