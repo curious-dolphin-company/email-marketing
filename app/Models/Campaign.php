@@ -18,6 +18,10 @@ class Campaign extends Model
 
     public const STATUS_FAILED = 'failed';
 
+    public const TEMPLATE_TEXT_ONLY = 'text-only';
+
+    public const TEMPLATE_RICH_HTML = 'rich-html';
+
     protected $fillable = [
         'user_id',
         'name',
@@ -26,6 +30,7 @@ class Campaign extends Model
         'status',
         'scheduled_at',
         'sent_at',
+        'template',
     ];
 
     protected function casts(): array

@@ -38,6 +38,8 @@ class CampaignEmail extends Mailable
         $this->unsubscribe_url = route('unsubscribe', [
             'token' => $subscriber->unsubscribe_token,
         ]);
+
+        $this->body = str_replace("{{" . config('app.unsubscribe_url_token') . "}}", $this->unsubscribe_url, $this->body);
     }
 
     /**

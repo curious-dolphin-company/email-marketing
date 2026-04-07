@@ -16,6 +16,7 @@ new class extends Component
     public string $name = '';
     public string $subject = '';
     public string $body = '';
+    public string $template = Campaign::TEMPLATE_TEXT_ONLY;
     public ?string $scheduled_at = null;
 
     public ?int $savedCampaignId = null;
@@ -37,7 +38,8 @@ new class extends Component
         return [
             'name' => ['required', 'string', 'max:255'],
             'subject' => ['required', 'string', 'max:255'],
-            'body' => ['required', 'string', 'max:10000'],
+            'template' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:1000000'],
         ];
     }
 
@@ -46,6 +48,7 @@ new class extends Component
         \Log::debug(['campaign' => $campaign]);
         $this->name = $campaign->name;
         $this->subject = $campaign->subject;
+        $this->template = $campaign->template;
         $this->body = $campaign->body;
         $this->scheduled_at = $campaign->scheduled_at;
     }
@@ -57,6 +60,7 @@ new class extends Component
         if ($this->campaign) {
             $this->campaign->name = $this->name;
             $this->campaign->subject = $this->subject;
+            $this->campaign->template = $this->template;
             $this->campaign->body = $this->body;
             $this->campaign->scheduled_at = $this->scheduled_at;
             if ($this->campaign->status == Campaign::STATUS_DRAFT && $this->campaign->scheduled_at) {
@@ -70,6 +74,7 @@ new class extends Component
                 'user_id' => Auth::id(),
                 'name' => $this->name,
                 'subject' => $this->subject,
+                'template' => $this->template,
                 'body' => $this->body,
                 'scheduled_at' => $this->scheduled_at,
                 'status' => $this->scheduled_at ? Campaign::STATUS_SCHEDULED : Campaign::STATUS_DRAFT,
@@ -87,6 +92,7 @@ new class extends Component
         $this->reset([
             'name',
             'subject',
+            'template',
             'body',
             'scheduled_at',
             'savedCampaignId',
@@ -155,7 +161,22 @@ new class extends Component
 
             {{-- Body --}}
             <div>
-                <x-input.label for="body">{{ __('Email Body (Plain Text)') }}</x-input.label>
+                <x-input.label for="body">{{ __('Email Body') }}</x-input.label>
+
+                <div class="grid sm:grid-cols-2 gap-2 mb-2">
+                    <x-input.radio id="template-text-only" wire:model.defer="template" value="text-only" >{{ __('Text Only') }}</x-input.radio>
+                    <x-input.radio id="template-rich-html" wire:model.defer="template" value="rich-html" >{{ __('Rich HTML') }}</x-input.radio>
+<!--                   <label for="hs-radio-in-form" class="flex items-center p-3 w-full bg-layer border border-layer-line rounded-lg text-sm focus:border-primary-focus focus:ring-primary-focus">
+                    <input type="radio" wire:model.defer="template" value="text-only" class="shrink-0 size-4 bg-transparent border-line-3 rounded-full shadow-2xs text-primary focus:ring-0 focus:ring-offset-0 checked:bg-primary-checked checked:border-primary-checked disabled:opacity-50 disabled:pointer-events-none" id="hs-radio-in-form">
+                    <span class="text-sm ms-3 text-muted-foreground-1">{{ __('Text Only') }}</span>
+                  </label>
+
+                  <label for="hs-radio-checked-in-form" class="flex items-center p-3 w-full bg-layer border border-layer-line rounded-lg text-sm focus:border-primary-focus focus:ring-primary-focus">
+                    <input type="radio" wire:model.defer="template" value="rich-html" class="shrink-0 size-4 bg-transparent border-line-3 rounded-full shadow-2xs text-primary focus:ring-0 focus:ring-offset-0 checked:bg-primary-checked checked:border-primary-checked disabled:opacity-50 disabled:pointer-events-none" id="hs-radio-checked-in-form" checked>
+                    <span class="text-sm ms-3 text-muted-foreground-1">{{ __('Rich HTML') }}</span>
+                  </label>
+ -->                </div>
+
                 <x-input.textarea
                     id="body"
                     wire:model.defer="body"

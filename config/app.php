@@ -123,4 +123,5 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'unsubscribe_url_token' => 'unsubscribe.url',
 ];
